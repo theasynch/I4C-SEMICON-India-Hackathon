@@ -221,6 +221,8 @@ def main():
                         help='Path to checkpoint to resume from')
     parser.add_argument('--gpu', type=int, default=0,
                         help='GPU device ID')
+    parser.add_argument('--data_dir', type=str, default=None,
+                        help='Override training data directory (contains NoisyLR/ and GT/)')
     args = parser.parse_args()
     
     # Load config
@@ -238,7 +240,7 @@ def main():
     
     # Create dataloaders
     data_cfg = config.get('data', {})
-    train_dir = data_cfg.get('train_dir', 'data/train')
+    train_dir = args.data_dir if args.data_dir else data_cfg.get('train_dir', 'data/train')
     val_dir = data_cfg.get('val_dir', None)
     batch_size = data_cfg.get('batch_size', 8)
     num_workers = data_cfg.get('num_workers', 4)

@@ -133,7 +133,7 @@ torch.cuda.empty_cache()
 
 # %%
 # Train with the unified config
-!python train.py --config configs/train_unified.yaml --gpu 0
+!python train.py --config configs/train_unified.yaml --gpu 0 --data_dir /content/Data-public/train/train
 
 # %% [markdown]
 # ## 5. Evaluation on Test Set
