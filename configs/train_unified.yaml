@@ -1,0 +1,96 @@
+# Unified training configuration for WaveSemiNet
+# Calibrated to actual hackathon dataset:
+#   NoisyLR: 128x128 float32 (noisy + downsampled)
+#   GT:      256x256 float32 (clean, range [0,1])
+#   Task:    Joint denoising + 2x super-resolution
+
+model:
+  name: "WaveSemiNet"
+  in_channels: 1           # Grayscale semiconductor images
+  out_channels: 1
+  base_channels: 48        # Base feature dimension
+  scale_factor: 2          # 2x super-resolution (128→256)
+  wavelet: "haar"
+
+  nafnet_branch:
+    num_blocks: [2, 2, 4, 4]   # Blocks per encoder/decoder level
+    middle_blocks: 2
+    dropout: 0.0
+
+  edge_transformer:
+    num_layers: 4           # Transformer layers
+    embed_dim: 96
+    num_heads: 4
+    window_size: 8
+    mlp_ratio: 2.0
+    dropout: 0.0
+
+  fusion:
+    method: "cross_attention_fft"
+    fft_norm: "ortho"
+
+data:
+  train_dir: "Data-public/train/train"    # Contains NoisyLR/ and GT/
+  val_dir: null                            # Will split from train
+  test_dir: "Data-public/test"             # Contains NoisyLR/
+  patch_size: 128           # Full NoisyLR image (no crop needed)
+  batch_size: 8
+  num_workers: 4
+  pin_memory: true
+
+  augmentation:
+    random_crop: false      # Images are already 128x128
+    random_flip: true
+    random_rotate90: true
+    brightness_jitter: 0.0  # Don't jitter — semiconductor images need exact intensity
+    contrast_jitter: 0.0
+
+training:
+  epochs: 200
+  optimizer:
+    name: "AdamW"
+    lr: 1.0e-3
+    weight_decay: 1.0e-4
+    betas: [0.9, 0.999]
+
+  scheduler:
+    name: "CosineAnnealingWarmRestarts"
+    T_0: 50
+    T_mult: 2
+    eta_min: 1.0e-6
+
+  warmup:
+    epochs: 5
+    start_lr: 1.0e-6
+
+  mixed_precision: true
+  gradient_clip: 1.0
+  ema: true
+  ema_decay: 0.999
+
+loss:
+  pixel:
+    type: "Charbonnier"
+    weight: 1.0
+  frequency:
+    type: "FFT_L1"
+    weight: 0.1
+  edge:
+    type: "Sobel_L1"
+    weight: 0.05
+  ssim:
+    type: "SSIM"
+    weight: 0.1
+
+evaluation:
+  metrics: ["psnr", "ssim", "lpips"]
+  save_images: true
+  num_visualizations: 20
+
+logging:
+  log_dir: "logs"
+  save_dir: "weights"
+  save_every: 10
+  log_every: 100
+  val_every: 1
+  tensorboard: true

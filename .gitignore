@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (too large for git)
+Data-public/
+data/train/
+data/val/
+data/test/
+*.zip
+
+# Model weights (too large for git)
+weights/*.pth
+weights/*.pt
+weights/*.onnx
+
+# Logs
+logs/
+*.log
+wandb/
+
+# Results (regenerable)
+results/restored/
+results/visualizations/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# PyTorch
+*.pth.tar
